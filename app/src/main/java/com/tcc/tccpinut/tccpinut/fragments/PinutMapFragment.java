@@ -30,21 +30,30 @@ public class PinutMapFragment extends SupportMapFragment implements OnMapReadyCa
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-        LatLng latLng = getCoord("Sao Paulo");
+        //LatLng latLng = getCoord("Sao Paulo");
+        LatLng latLng = new LatLng(40.785091,-73.968285);
         if (latLng != null){
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 16);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 15);
             googleMap.moveCamera(cameraUpdate);
-            MarkerOptions mk = new MarkerOptions();
-            mk.position(latLng);
-            mk.title("VISH");
-            googleMap.addMarker(mk);
+            setMarkers(googleMap);
 
         }
 
-
-
     }
 
+
+    // Função que vai pegar os markers pelo webservice e colocar no mapa
+    // TODO: Looping que vai buscar o resultado do webservice
+    private boolean setMarkers(GoogleMap googleMap){
+        LatLng latLng = new LatLng(40.785091,-73.968285);
+        MarkerOptions mk = new MarkerOptions();
+        mk.position(latLng);
+        mk.title("VISH");
+        googleMap.addMarker(mk);
+        return true;
+    }
+
+    // Pega as coordenadas de um endereço através do texto do endereço.
     private LatLng getCoord(String adress) {
         Geocoder geocoder = new Geocoder(getContext());
         try {
