@@ -16,6 +16,24 @@ public class Pinut {
     private int privacy;
     private Date createdOn;
     private LatLng location;
+    private String imagepath;
+    private String audiopath;
+
+    public String getImagepath() {
+        return imagepath;
+    }
+
+    public void setImagepath(String imagepath) {
+        this.imagepath = imagepath;
+    }
+
+    public String getAudiopath() {
+        return audiopath;
+    }
+
+    public void setAudiopath(String audiopath) {
+        this.audiopath = audiopath;
+    }
 
     public int getPinid() {
         return pinid;

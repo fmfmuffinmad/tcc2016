@@ -18,20 +18,25 @@ public class DBControl extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-//        private int pinid;
-//        private int ownerid;
-//        private Date expireOn;
-//        private int privacy;
-//        private Date createdOn;
-//        private LatLng location;
-        String sql = "CREATE TABLE PINUTS (" +
-                "PINID INTEGER PRIMARY KEY," +
-                "OWNERID INTEGER NOT NULL," +
-                "EXPIREON INTEGER," +
-                "PRIVACY INTEGER," +
-                "CREATEDON INTEGER," +
-                "LATITUDE REAL," +
-                "LONGITUDE REAL); ";
+
+        String sql =
+                        //tabela PINUTS
+                        "CREATE TABLE PINUTS (" +
+                        "PINID INTEGER PRIMARY KEY," +
+                        "OWNERID INTEGER NOT NULL," +
+                        "EXPIREON INTEGER," +
+                        "PRIVACY INTEGER," +
+                        "CREATEDON INTEGER," +
+                        "LATITUDE REAL," +
+                        "LONGITUDE REAL," +
+                        "IMAGEPATH STRING," +
+                        "AUDIOPATH STRING); " +
+                        //tabela Amigos
+                        "CREATE TABLE AMIGOS (" +
+                        "ID INTEGER PRIMARY KEY," +
+                        "USERNAME STRING," +
+                        "PHONE STRING);";
+
         sqLiteDatabase.execSQL(sql);
     }
 
