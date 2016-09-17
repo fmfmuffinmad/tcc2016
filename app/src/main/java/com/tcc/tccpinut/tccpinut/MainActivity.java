@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity
         ContaFragment.OnFragmentInteractionListener {
 
     private FragmentManager fragManager;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -112,11 +114,20 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction fragTran = fragManager.beginTransaction();
 
         if (id == R.id.nav_mapa) {
-            createMapFrag(fragTran);
+            if(fab.getVisibility() != View.VISIBLE){
+                fab.show();
+                createMapFrag(fragTran);
+            }
         } else if (id == R.id.nav_toppinuts) {
+            if (fab.getVisibility() == View.VISIBLE){
+                fab.hide();
+            }
             fragTran.replace(R.id.main_frame, new TopPinutsFragment());
             fragTran.commit();
         } else if (id == R.id.nav_amigos) {
+            if (fab.getVisibility() == View.VISIBLE){
+                fab.hide();
+            }
             fragTran.replace(R.id.main_frame, new AmigosFragment());
             fragTran.commit();
         } else if (id == R.id.nav_compartilhar) {
@@ -124,6 +135,9 @@ public class MainActivity extends AppCompatActivity
             // TODO: Colocar a opção de compartilhar
 
         } else if (id == R.id.nav_conta) {
+            if (fab.getVisibility() == View.VISIBLE){
+                fab.hide();
+            }
             fragTran.replace(R.id.main_frame, new ContaFragment());
             fragTran.commit();
         }
