@@ -22,6 +22,7 @@ import java.util.List;
 public class PinutMapFragment extends SupportMapFragment implements OnMapReadyCallback{
 
     private LatLng initLatLng;
+    private GoogleMap gMap;
 
     public LatLng getInitLatLng() {
         return initLatLng;
@@ -35,14 +36,23 @@ public class PinutMapFragment extends SupportMapFragment implements OnMapReadyCa
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         Bundle b = getArguments();
-        initLatLng = new LatLng(b.getDouble("LAT"), b.getDouble("LGN"));
+        double i,j;
+        i = b.getDouble("LAT");
+        j = b.getDouble("LGN");
+        initLatLng = new LatLng(i, j);
         getMapAsync(this);
+    }
+
+    public void moveCamera(LatLng latLng){
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(initLatLng, 12);
+        gMap.moveCamera(cameraUpdate);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        gMap = googleMap;
         if (initLatLng != null){
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(initLatLng, 15);
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(initLatLng, 12);
             googleMap.moveCamera(cameraUpdate);
             setMarkers(googleMap);
         }

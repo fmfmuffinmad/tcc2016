@@ -122,10 +122,10 @@ public class MainActivity extends AppCompatActivity
 //            bundle.putDouble("LGT", localizador.getLatLng().longitude);
         if (atualLatLng !=null){
             bundle.putDouble("LAT", atualLatLng.latitude);
-            bundle.putDouble("LGT", atualLatLng.longitude);
+            bundle.putDouble("LNG", atualLatLng.longitude);
         }else{
-            bundle.putDouble("LAT", 0);
-            bundle.putDouble("LGT", 0);
+            bundle.putDouble("LAT", 40.785091);
+            bundle.putDouble("LNG", -73.968285);
         }
 
         pinutMapFragment.setArguments(bundle);
@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .build();
-        atualLatLng = new LatLng(20, -20);
+        atualLatLng = new LatLng(40.785091,-73.968285);
         client.connect();
     }
 
@@ -236,16 +236,16 @@ public class MainActivity extends AppCompatActivity
         request.setSmallestDisplacement(30);
         request.setInterval(3000);
 
-        request.setPriority(LocationRequest.PRIORITY_LOW_POWER);
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(client);
         if (lastLocation != null){
             atualLatLng = (new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()));
         }else{
-            atualLatLng = (new LatLng(15, 15));
+            atualLatLng = (new LatLng(40.785091,-73.968285));
         }
 
         LocationServices.FusedLocationApi.requestLocationUpdates(client, request, this);
-    }
+        }
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -255,5 +255,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLocationChanged(Location location) {
         atualLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        pinutMapFragment.moveCamera(atualLatLng);
     }
 }
