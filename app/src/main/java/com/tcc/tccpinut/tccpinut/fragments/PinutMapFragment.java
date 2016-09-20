@@ -11,6 +11,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.tcc.tccpinut.tccpinut.classes.Localizador;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,23 +21,30 @@ import java.util.List;
  */
 public class PinutMapFragment extends SupportMapFragment implements OnMapReadyCallback{
 
+    private LatLng initLatLng;
+
+    public LatLng getInitLatLng() {
+        return initLatLng;
+    }
+
+    public void setInitLatLng(LatLng initLatLng) {
+        this.initLatLng = initLatLng;
+    }
+
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-
+        Bundle b = getArguments();
+        initLatLng = new LatLng(b.getDouble("LAT"), b.getDouble("LGN"));
         getMapAsync(this);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-
-        //LatLng latLng = getCoord("Sao Paulo");
-        LatLng latLng = new LatLng(40.785091,-73.968285);
-        if (latLng != null){
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 15);
+        if (initLatLng != null){
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(initLatLng, 15);
             googleMap.moveCamera(cameraUpdate);
             setMarkers(googleMap);
-
         }
 
     }
