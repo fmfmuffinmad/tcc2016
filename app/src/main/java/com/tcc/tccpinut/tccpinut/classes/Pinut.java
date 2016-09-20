@@ -55,8 +55,8 @@ public class Pinut {
         return expireOn;
     }
 
-    public void setExpireOn(Date expireOn) {
-        this.expireOn = expireOn;
+    public void setExpireOn(long expireOn) {
+        this.expireOn.setTime(expireOn);
     }
 
     public int getPrivacy() {
@@ -71,16 +71,16 @@ public class Pinut {
         return createdOn;
     }
 
-    public void setCreatedOn(Date createdOn) {
-        this.createdOn = createdOn;
+    public void setCreatedOn(long createdOn) {
+        this.createdOn.setTime(createdOn);
     }
 
     public LatLng getLocation() {
         return location;
     }
 
-    public void setLocation(LatLng location) {
-        this.location = location;
+    public void setLocation(double lat, double lng) {
+        this.location = new LatLng(lat, lng);
     }
 
 

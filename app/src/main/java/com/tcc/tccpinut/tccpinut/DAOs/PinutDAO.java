@@ -2,11 +2,15 @@ package com.tcc.tccpinut.tccpinut.DAOs;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.support.annotation.NonNull;
 
 import com.tcc.tccpinut.tccpinut.classes.Pinut;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by muffinmad on 17/09/2016.
@@ -23,16 +27,6 @@ public class PinutDAO extends DBControl{
         db.insert("ALUNOS", null, dados);
     }
 
-//    private int pinid;
-//    private int ownerid;
-//    private Date expireOn;
-//    private int privacy;
-//    private Date createdOn;
-//    private LatLng location;
-//    private String imagepath;
-//    private String audiopath;
-
-
     @NonNull
     private ContentValues getContentValues(Pinut pinut) {
         ContentValues dados = new ContentValues();
@@ -41,43 +35,55 @@ public class PinutDAO extends DBControl{
         dados.put("EXPIREON", pinut.getExpireOn().getTime());
         dados.put("PRIVACY", pinut.getPrivacy());
         dados.put("CREATEDON", pinut.getCreatedOn().getTime());
-        // TODO: fazer LatLgn.
+        dados.put("LATITUDE", pinut.getLocation().latitude);
+        dados.put("LONGITUDE", pinut.getLocation().longitude);
         dados.put("IMAGEPATH", pinut.getImagepath());
         dados.put("AUDIOPATH", pinut.getAudiopath());
 
         return dados;
     }
-//
-//    public List<Aluno> buscaAlunos() {
-//        String sql = "SELECT * FROM ALUNOS";
-//        SQLiteDatabase db = getReadableDatabase();
-//        Cursor c = db.rawQuery(sql, null);
-//
-//        List<Aluno> alunos = new ArrayList<Aluno>();
-//        Aluno aluno = null;
-//        while (c.moveToNext()) {
-//            aluno = new Aluno();
-//            aluno.set_ID(c.getLong(c.getColumnIndex("ID")));
-//            aluno.set_nome(c.getString(c.getColumnIndex("NOME")));
-//            aluno.set_endereco(c.getString(c.getColumnIndex("ENDERECO")));
-//            aluno.set_telefone(c.getString(c.getColumnIndex("TELEFONE")));
-//            aluno.set_site(c.getString(c.getColumnIndex("SITE")));
-//            aluno.set_nota(c.getFloat(c.getColumnIndex("NOTA")));
-//            aluno.set_caminhoFoto(c.getString(c.getColumnIndex("CAMINHOFOTO")));
-//
-//            alunos.add(aluno);
-//        }
-//
-//        c.close();
-//        return alunos;
-//    }
-//
-//    public void deletar(Aluno aluno) {
-//        SQLiteDatabase db = getWritableDatabase();
-//        String[] params = {Long.toString(aluno.get_ID())};
-//        db.delete("Alunos", "id = ?", params);
-//
-//    }
+
+    public void deletar(Pinut pinut) {
+        SQLiteDatabase db = getWritableDatabase();
+        String[] params = {Long.toString(pinut.getPinid())};
+        db.delete("PINUTS", "PINID = ?", params);
+
+    }
+
+
+    public void altera(Pinut pinut) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues dados = getContentValues(pinut);
+        String[] param = {Long.toString(pinut.getPinid())};
+        db.update("ALUNOS", dados, "ID = ?", param);
+    }
+
+    public List<Pinut> buscaAlunos() {
+        String sql = "SELECT * FROM ALUNOS";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.rawQuery(sql, null);
+
+        List<Pinut> pinuts = new ArrayList<Pinut>();
+        Pinut pinut = null;
+        while (c.moveToNext()) {
+            pinut = new Pinut();
+            pinut.setPinid(c.getInt(c.getColumnIndex("PINID")));
+            pinut.setOwnerid(c.getInt(c.getColumnIndex("OWNERID")));
+            pinut.setExpireOn(c.getLong(c.getColumnIndex("EXPIREON")));
+            pinut.setPrivacy(c.getInt(c.getColumnIndex("PRIVACY")));
+            pinut.setCreatedOn(c.getLong(c.getColumnIndex("CREATEDON")));
+            pinut.setLocation(c.getDouble(c.getColumnIndex("LATITUDE")),c.getDouble(c.getColumnIndex("LONGITUDE")));
+            pinut.setImagepath(c.getString(c.getColumnIndex("IMAGEPATH")));
+            pinut.setAudiopath(c.getString(c.getColumnIndex("AUDIOPATH")));
+
+            pinuts.add(pinut);
+        }
+
+        c.close();
+        return pinuts;
+    }
+
+
 //
 //    public boolean isAluno(String telefone){
 //        SQLiteDatabase db = getReadableDatabase();
@@ -91,12 +97,7 @@ public class PinutDAO extends DBControl{
 //        return false;
 //    }
 //
-//    public void altera(Aluno aluno) {
-//        SQLiteDatabase db = getWritableDatabase();
-//        ContentValues dados = getContentValues(aluno);
-//        String[] param = {Long.toString(aluno.get_ID())};
-//        db.update("ALUNOS", dados, "ID = ?", param);
-//    }
+
 
 }
 

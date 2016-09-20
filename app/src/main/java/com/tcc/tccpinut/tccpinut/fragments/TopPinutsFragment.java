@@ -4,11 +4,13 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.tcc.tccpinut.tccpinut.R;
 
@@ -31,6 +33,8 @@ public class TopPinutsFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+    private View view;
+    private SwipeRefreshLayout refreshView;
 
     public TopPinutsFragment() {
         // Required empty public constructor
@@ -67,11 +71,23 @@ public class TopPinutsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_top_pinuts, container, false);
+        view = inflater.inflate(R.layout.fragment_top_pinuts, container, false);
         String[] amigos = {"Top 1", "Top 2"};
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, amigos);
         ListView lista = (ListView) view.findViewById(R.id.toppinuts_list);
         lista.setAdapter(adapter);
+
+        // Metodod do SwipeToRefresh
+        refreshView = (SwipeRefreshLayout) view.findViewById(R.id.toppinuts_refresh);
+        refreshView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Toast.makeText(getContext(), "Atualizado", Toast.LENGTH_SHORT).show();
+                refreshView.setRefreshing(false);
+            }
+        });
+
+
         return view;
     }
 
@@ -98,6 +114,14 @@ public class TopPinutsFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
+//    @Override
+//    public void onRefresh() {
+//        Toast.makeText(getContext(), "Atualizado", Toast.LENGTH_SHORT).show();
+//
+//        refreshView.setRefreshing(false);
+//
+//    }
 
     /**
      * This interface must be implemented by activities that contain this
