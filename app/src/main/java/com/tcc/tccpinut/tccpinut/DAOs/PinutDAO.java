@@ -17,14 +17,14 @@ import java.util.List;
  */
 public class PinutDAO extends DBControl{
 
-    public PinutDAO(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
+    public PinutDAO(Context context) {
+        super(context);
     }
 
     public void insert(Pinut pinut) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues dados = getContentValues(pinut);
-        db.insert("ALUNOS", null, dados);
+        db.insert("PINUTS", null, dados);
     }
 
     @NonNull
@@ -39,6 +39,8 @@ public class PinutDAO extends DBControl{
         dados.put("LONGITUDE", pinut.getLocation().longitude);
         dados.put("IMAGEPATH", pinut.getImagepath());
         dados.put("AUDIOPATH", pinut.getAudiopath());
+        dados.put("TITLE", pinut.getTitle());
+        dados.put("PTEXT", pinut.getText());
 
         return dados;
     }
@@ -55,11 +57,11 @@ public class PinutDAO extends DBControl{
         SQLiteDatabase db = getWritableDatabase();
         ContentValues dados = getContentValues(pinut);
         String[] param = {Long.toString(pinut.getPinid())};
-        db.update("ALUNOS", dados, "ID = ?", param);
+        db.update("PINUTS", dados, "ID = ?", param);
     }
 
-    public List<Pinut> buscaAlunos() {
-        String sql = "SELECT * FROM ALUNOS";
+    public List<Pinut> buscaPinuts() {
+        String sql = "SELECT * FROM PINUTS";
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(sql, null);
 
@@ -75,6 +77,8 @@ public class PinutDAO extends DBControl{
             pinut.setLocation(c.getDouble(c.getColumnIndex("LATITUDE")),c.getDouble(c.getColumnIndex("LONGITUDE")));
             pinut.setImagepath(c.getString(c.getColumnIndex("IMAGEPATH")));
             pinut.setAudiopath(c.getString(c.getColumnIndex("AUDIOPATH")));
+            pinut.setTitle(c.getString(c.getColumnIndex("TITLE")));
+            pinut.setText(c.getString(c.getColumnIndex("PTEXT")));
 
             pinuts.add(pinut);
         }

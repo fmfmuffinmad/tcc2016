@@ -18,6 +18,29 @@ public class Pinut {
     private LatLng location;
     private String imagepath;
     private String audiopath;
+    private String title;
+    private String text;
+
+    public Pinut() {
+
+
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 
     public String getImagepath() {
         return imagepath;
@@ -56,7 +79,9 @@ public class Pinut {
     }
 
     public void setExpireOn(long expireOn) {
-        this.expireOn.setTime(expireOn);
+        Date d = new Date();
+        d.setTime(expireOn);
+        this.expireOn = d ;
     }
 
     public int getPrivacy() {
@@ -72,7 +97,9 @@ public class Pinut {
     }
 
     public void setCreatedOn(long createdOn) {
-        this.createdOn.setTime(createdOn);
+        Date d = new Date();
+        d.setTime(createdOn);
+        this.createdOn = d ;
     }
 
     public LatLng getLocation() {
@@ -81,6 +108,10 @@ public class Pinut {
 
     public void setLocation(double lat, double lng) {
         this.location = new LatLng(lat, lng);
+    }
+
+    public void setLatLng(LatLng latLng){
+        this.location = latLng;
     }
 
 

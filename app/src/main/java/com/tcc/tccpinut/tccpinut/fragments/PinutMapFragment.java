@@ -29,10 +29,15 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.vision.text.Text;
+import com.tcc.tccpinut.tccpinut.DAOs.DBControl;
+import com.tcc.tccpinut.tccpinut.DAOs.PinutDAO;
 import com.tcc.tccpinut.tccpinut.R;
+import com.tcc.tccpinut.tccpinut.classes.Pinut;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by muffinmad on 13/09/2016.
@@ -52,6 +57,11 @@ public class PinutMapFragment extends SupportMapFragment implements
     private Marker mCurrLocationMarker;
     private boolean firstExecution;
     private CameraPosition cameraPosition;
+    private List<Marker> markerList;
+
+    // variáveis para auxiliar no carregamentos das pints
+    private LatLng currLatLng;
+    private final double CHUNCK_VALUE = 0.05;
 
     public LatLng getInitLatLng() {
         return initLatLng;
@@ -65,6 +75,7 @@ public class PinutMapFragment extends SupportMapFragment implements
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         firstExecution = true;
+        markerList = new ArrayList<Marker>();
         getMapAsync(this);
     }
 
@@ -94,20 +105,44 @@ public class PinutMapFragment extends SupportMapFragment implements
             gMap.setMyLocationEnabled(true);
 
         }
-
-
+        loadMarkers();
     }
 
 
     // Função que vai pegar os markers pelo webservice e colocar no mapa
-    // TODO: Looping que vai buscar o resultado do webservice
-    private boolean setMarkers(GoogleMap googleMap){
-        LatLng latLng = new LatLng(40.785091,-73.968285);
-        MarkerOptions mk = new MarkerOptions();
-        mk.position(latLng);
-        mk.title("VISH");
-        googleMap.addMarker(mk);
+    private boolean loadMarkers(){
+        PinutDAO dao = new PinutDAO(getContext());
+        List<Pinut> lista = dao.buscaPinuts(); //// TODO: 21/09/2016 Trocar pela função do webservice
+        dao.close();
+        gMap.clear();
+        if (lista != null) {
+            if (!lista.isEmpty()) {
+                for (Pinut pinut: lista
+                     ) {
+                    MarkerOptions mk = new MarkerOptions();
+                    mk.position(pinut.getLocation());
+                    mk.title(pinut.getTitle());
+                    Marker a = gMap.addMarker(mk);
+                    a.setTag(pinut);
+                    markerList.add(a);
+                }
+            }
+        }
+
         return true;
+    }
+
+    public void testePinut(){
+        Pinut pinut = new Pinut();
+        pinut.setLatLng(gMap.getCameraPosition().target);
+        pinut.setTitle("VISH PINUT NOVA!");
+        pinut.setCreatedOn(System.currentTimeMillis());
+        pinut.setExpireOn(TimeUnit.MILLISECONDS.convert(3, TimeUnit.DAYS));
+        PinutDAO dao = new PinutDAO(getContext());
+        dao.insert(pinut);
+        dao.close();
+        Toast.makeText(getContext(), "Pinut Criada", Toast.LENGTH_SHORT).show();
+        loadMarkers();
     }
 
     // Pega as coordenadas de um endereço através do texto do endereço.
@@ -134,6 +169,15 @@ public class PinutMapFragment extends SupportMapFragment implements
         t1.setText(Double.toString(cameraPosition.target.latitude));
         t2.setText(Double.toString(cameraPosition.target.longitude));
 
+        if (currLatLng == null) {
+            currLatLng = cameraPosition.target;
+        }else{
+            if ( (Math.abs(cameraPosition.target.latitude)+Math.abs(cameraPosition.target.longitude))
+                    -  (Math.abs(currLatLng.latitude)+Math.abs(currLatLng.longitude)) > CHUNCK_VALUE){
+                currLatLng = cameraPosition.target;
+                loadMarkers();
+            }
+        }
     }
 
     // ---------------- Rotinas dos servições de localização

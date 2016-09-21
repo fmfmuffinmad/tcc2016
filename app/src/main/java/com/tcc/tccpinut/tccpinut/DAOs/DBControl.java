@@ -12,8 +12,8 @@ public class DBControl extends SQLiteOpenHelper {
     public static final int DBVERSION = 1;
     public static final String DBNAME = "PinutDB";
 
-    public DBControl(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, DBNAME, factory, DBVERSION);
+    public DBControl(Context context) {
+        super(context, DBNAME, null, DBVERSION);
     }
 
     @Override
@@ -24,14 +24,16 @@ public class DBControl extends SQLiteOpenHelper {
                         "CREATE TABLE PINUTS (" +
                         "LOCALID INTEGER PRIMARY KEY," +
                         "PINID INTEGER," +
-                        "OWNERID INTEGER NOT NULL," +
+                        "OWNERID INTEGER," +
                         "EXPIREON INTEGER," +
                         "PRIVACY INTEGER," +
                         "CREATEDON INTEGER," +
-                        "LATITUDE REAL," +
-                        "LONGITUDE REAL," +
-                        "IMAGEPATH STRING," +
-                        "AUDIOPATH STRING); " +
+                        "LATITUDE DOUBLE," +
+                        "LONGITUDE DOUBLE," +
+                        "IMAGEPATH TEXT," +
+                        "AUDIOPATH TEXT," +
+                        "TITLE TEXT," +
+                        "PTEXT TEXT); " +
                         //tabela Amigos
                         "CREATE TABLE AMIGOS (" +
                         "ID INTEGER PRIMARY KEY," +
@@ -43,7 +45,10 @@ public class DBControl extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        String sql = null;
+        String sql = "DROP TABLE IF EXISTS PINUTS;" +
+                "DROP TABLE IF EXISTS AMIGOS";
+        sqLiteDatabase.execSQL(sql);
+        onCreate(sqLiteDatabase);
 //        switch (i){
 //            case 1:
 //                sql = "ALTER TABLE ALUNOS ADD COLUMN CAMINHOFOTO TEXT";

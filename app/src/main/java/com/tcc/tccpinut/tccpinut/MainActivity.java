@@ -65,8 +65,10 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intentCreatePinut = new Intent(MainActivity.this, CreatePinut.class);
-                startActivity(intentCreatePinut);
+                pinutMapFragment.testePinut();
+
+//                Intent intentCreatePinut = new Intent(MainActivity.this, CreatePinut.class);
+//                startActivity(intentCreatePinut);
             }
         });
 

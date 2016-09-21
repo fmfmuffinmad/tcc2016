@@ -14,8 +14,8 @@ import java.util.List;
  */
 public class AmigoDAO extends DBControl{
 
-    public AmigoDAO(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
+    public AmigoDAO(Context context) {
+        super(context);
     }
 
 //    public void insert(Aluno aluno) {
