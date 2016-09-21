@@ -26,7 +26,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.tcc.tccpinut.tccpinut.classes.Localizador;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,6 +45,7 @@ public class PinutMapFragment extends SupportMapFragment implements
     private LocationRequest mLocationRequest;
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
+    private boolean firstExecution;
 
     public LatLng getInitLatLng() {
         return initLatLng;
@@ -58,6 +58,7 @@ public class PinutMapFragment extends SupportMapFragment implements
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+        firstExecution = true;
         getMapAsync(this);
     }
 
@@ -155,7 +156,8 @@ public class PinutMapFragment extends SupportMapFragment implements
 
         //move map camera
         gMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        gMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+        gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+
 
         //stop location updates
         if (mGoogleApiClient != null) {

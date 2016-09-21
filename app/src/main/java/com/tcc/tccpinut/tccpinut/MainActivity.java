@@ -3,6 +3,7 @@ package com.tcc.tccpinut.tccpinut;
 import android.*;
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -34,7 +35,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.tcc.tccpinut.tccpinut.classes.Localizador;
 import com.tcc.tccpinut.tccpinut.fragments.AmigosFragment;
 import com.tcc.tccpinut.tccpinut.fragments.ContaFragment;
 import com.tcc.tccpinut.tccpinut.fragments.PinutMapFragment;
@@ -45,13 +45,11 @@ public class MainActivity extends AppCompatActivity
         TopPinutsFragment.OnFragmentInteractionListener,
         AmigosFragment.OnFragmentInteractionListener,
         ContaFragment.OnFragmentInteractionListener
-//        GoogleApiClient.ConnectionCallbacks,
-//        LocationListener {
-    {
+
+{
 
     private FragmentManager fragManager;
     private FloatingActionButton fab;
-    private Localizador localizador;
     private PinutMapFragment pinutMapFragment;
 
 
@@ -59,6 +57,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -80,30 +79,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-//        // permição de gps
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-//                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//                // TODO: Consider calling
-//                //    ActivityCompat#requestPermissions
-//                // here to request the missing permissions, and then overriding
-//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                //                                          int[] grantResults)
-//                // to handle the case where the user grants the permission. See the documentation
-//                // for ActivityCompat#requestPermissions for more details.
-//                String[] permissoes = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
-//                requestPermissions(permissoes, 1);
-//                //localizador = new Localizador(this);
-//                criaLocalizador();
-//            }else{
-//                //localizador = new Localizador(this);
-//                criaLocalizador();
-//            }
-//        }else{
-//            //localizador = new Localizador(this);
-//            criaLocalizador();
-//        }
-
         fragManager = getSupportFragmentManager();
         // Cria o frag do mapa
         FragmentTransaction fragTran = fragManager.beginTransaction();
@@ -118,16 +93,6 @@ public class MainActivity extends AppCompatActivity
     public void createMapFrag(FragmentTransaction fragTran) {
         pinutMapFragment = new PinutMapFragment();
         Bundle bundle = new Bundle();
-        //if (localizador != null){
-//            bundle.putDouble("LAT", localizador.getLatLng().latitude);
-//            bundle.putDouble("LGT", localizador.getLatLng().longitude);
-//        if (atualLatLng !=null){
-//            bundle.putDouble("LAT", atualLatLng.latitude);
-//            bundle.putDouble("LNG", atualLatLng.longitude);
-//        }else{
-//            bundle.putDouble("LAT", 40.785091);
-//            bundle.putDouble("LNG", -73.968285);
-//        }
 
         pinutMapFragment.setArguments(bundle);
         fragTran.replace(R.id.main_frame, pinutMapFragment);
@@ -167,7 +132,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -176,18 +140,18 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction fragTran = fragManager.beginTransaction();
 
         if (id == R.id.nav_mapa) {
-            if(fab.getVisibility() != View.VISIBLE){
+            if (fab.getVisibility() != View.VISIBLE) {
                 fab.show();
                 createMapFrag(fragTran);
             }
         } else if (id == R.id.nav_toppinuts) {
-            if (fab.getVisibility() == View.VISIBLE){
+            if (fab.getVisibility() == View.VISIBLE) {
                 fab.hide();
             }
             fragTran.replace(R.id.main_frame, new TopPinutsFragment());
             fragTran.commit();
         } else if (id == R.id.nav_amigos) {
-            if (fab.getVisibility() == View.VISIBLE){
+            if (fab.getVisibility() == View.VISIBLE) {
                 fab.hide();
             }
             fragTran.replace(R.id.main_frame, new AmigosFragment());
@@ -197,7 +161,7 @@ public class MainActivity extends AppCompatActivity
             // TODO: Colocar a opção de compartilhar
 
         } else if (id == R.id.nav_conta) {
-            if (fab.getVisibility() == View.VISIBLE){
+            if (fab.getVisibility() == View.VISIBLE) {
                 fab.hide();
             }
             fragTran.replace(R.id.main_frame, new ContaFragment());
@@ -214,48 +178,4 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-
-//    // --------------------- Funções do GPS
-//
-//    private GoogleApiClient client;
-//    private LatLng atualLatLng;
-//
-//    private void criaLocalizador(){
-//        client = new GoogleApiClient.Builder(this)
-//                .addApi(LocationServices.API)
-//                .addConnectionCallbacks(this)
-//                .build();
-//        atualLatLng = new LatLng(40.785091,-73.968285);
-//        client.connect();
-//    }
-//
-//    @Override
-//    public void onConnected(@Nullable Bundle bundle) {
-//        LocationRequest request = new LocationRequest();
-//
-//        // intervalos para solicitação do serviço
-//        request.setSmallestDisplacement(30);
-//        request.setInterval(3000);
-//
-//        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-//        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(client);
-//        if (lastLocation != null){
-//            atualLatLng = (new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()));
-//        }else{
-//            atualLatLng = (new LatLng(40.785091,-73.968285));
-//        }
-//
-//        LocationServices.FusedLocationApi.requestLocationUpdates(client, request, this);
-//        }
-//
-//    @Override
-//    public void onConnectionSuspended(int i) {
-//
-//    }
-//
-//    @Override
-//    public void onLocationChanged(Location location) {
-//        atualLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-////        pinutMapFragment.moveCamera(atualLatLng);
-//    }
 }
