@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -23,9 +24,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.vision.text.Text;
+import com.tcc.tccpinut.tccpinut.R;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,7 +41,8 @@ public class PinutMapFragment extends SupportMapFragment implements
         OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener{
+        LocationListener,
+        GoogleMap.OnCameraMoveListener{
 
     private LatLng initLatLng;
     private GoogleMap gMap;
@@ -46,6 +51,7 @@ public class PinutMapFragment extends SupportMapFragment implements
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
     private boolean firstExecution;
+    private CameraPosition cameraPosition;
 
     public LatLng getInitLatLng() {
         return initLatLng;
@@ -70,6 +76,9 @@ public class PinutMapFragment extends SupportMapFragment implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
+        gMap.setOnCameraMoveListener(this);
+
+
         checkLocationPermission();
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(getActivity(),
@@ -77,12 +86,15 @@ public class PinutMapFragment extends SupportMapFragment implements
                     == PackageManager.PERMISSION_GRANTED) {
                 buildGoogleApiClient();
                 gMap.setMyLocationEnabled(true);
+
             }
         }
         else {
             buildGoogleApiClient();
             gMap.setMyLocationEnabled(true);
+
         }
+
 
     }
 
@@ -113,6 +125,18 @@ public class PinutMapFragment extends SupportMapFragment implements
         return null;
     }
 
+    @Override
+    public void onCameraMove() {
+
+        cameraPosition = gMap.getCameraPosition();
+        TextView t1 = (TextView) getActivity().findViewById(R.id.lat);
+        TextView t2 = (TextView) getActivity().findViewById(R.id.lng);
+        t1.setText(Double.toString(cameraPosition.target.latitude));
+        t2.setText(Double.toString(cameraPosition.target.longitude));
+
+    }
+
+    // ---------------- Rotinas dos servições de localização
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(getContext())
                 .addConnectionCallbacks(this)
@@ -231,4 +255,6 @@ public class PinutMapFragment extends SupportMapFragment implements
             // You can add here other case statements according to your requirement.
         }
     }
+
+
 }

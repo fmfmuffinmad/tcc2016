@@ -22,7 +22,8 @@ public class DBControl extends SQLiteOpenHelper {
         String sql =
                         //tabela PINUTS
                         "CREATE TABLE PINUTS (" +
-                        "PINID INTEGER PRIMARY KEY," +
+                        "LOCALID INTEGER PRIMARY KEY," +
+                        "PINID INTEGER," +
                         "OWNERID INTEGER NOT NULL," +
                         "EXPIREON INTEGER," +
                         "PRIVACY INTEGER," +
