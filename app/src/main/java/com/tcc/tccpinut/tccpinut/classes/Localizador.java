@@ -44,7 +44,6 @@ public class Localizador implements GoogleApiClient.ConnectionCallbacks, Locatio
                 .addConnectionCallbacks(this)
                 .build();
         this.context = context;
-        setLatLng(new LatLng(15, 15));
         client.connect();
     }
 
@@ -57,13 +56,6 @@ public class Localizador implements GoogleApiClient.ConnectionCallbacks, Locatio
         request.setInterval(3000);
 
         request.setPriority(LocationRequest.PRIORITY_LOW_POWER);
-        lastLocation = LocationServices.FusedLocationApi.getLastLocation(client);
-        if (lastLocation != null){
-            setLatLng(new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude()));
-        }else{
-            setLatLng(new LatLng(15, 15));
-        }
-
 
         LocationServices.FusedLocationApi.requestLocationUpdates(client, request, this);
 
