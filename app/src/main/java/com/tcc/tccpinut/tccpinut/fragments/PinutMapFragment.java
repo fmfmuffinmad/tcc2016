@@ -162,7 +162,7 @@ public class PinutMapFragment extends SupportMapFragment implements
 
     @Override
     public void onCameraMove() {
-        // teste
+
         cameraPosition = gMap.getCameraPosition();
         TextView t1 = (TextView) getActivity().findViewById(R.id.lat);
         TextView t2 = (TextView) getActivity().findViewById(R.id.lng);
