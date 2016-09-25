@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +38,7 @@ import com.tcc.tccpinut.tccpinut.classes.Pinut;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -47,7 +49,8 @@ public class PinutMapFragment extends SupportMapFragment implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener,
-        GoogleMap.OnCameraMoveListener{
+        GoogleMap.OnCameraMoveListener,
+        GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener {
 
     private LatLng initLatLng;
     private GoogleMap gMap;
@@ -57,7 +60,8 @@ public class PinutMapFragment extends SupportMapFragment implements
     private Marker mCurrLocationMarker;
     private boolean firstExecution;
     private CameraPosition cameraPosition;
-    private List<Marker> markerList;
+    //private List<Marker> markerList;
+    private WeakHashMap<Marker, Pinut> markerHashMap;
 
     // variáveis para auxiliar no carregamentos das pints
     private LatLng currLatLng;
@@ -75,7 +79,8 @@ public class PinutMapFragment extends SupportMapFragment implements
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         firstExecution = true;
-        markerList = new ArrayList<Marker>();
+        //markerList = new ArrayList<Marker>();
+        markerHashMap = new WeakHashMap<Marker, Pinut>();
         getMapAsync(this);
     }
 
@@ -88,7 +93,8 @@ public class PinutMapFragment extends SupportMapFragment implements
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
         gMap.setOnCameraMoveListener(this);
-
+        gMap.setInfoWindowAdapter(this);
+        gMap.setOnInfoWindowClickListener(this);
 
         checkLocationPermission();
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -124,7 +130,8 @@ public class PinutMapFragment extends SupportMapFragment implements
                     mk.title(pinut.getTitle());
                     Marker a = gMap.addMarker(mk);
                     a.setTag(pinut);
-                    markerList.add(a);
+                    markerHashMap.put(a, pinut);
+                    //markerList.add(a);
                 }
             }
         }
@@ -178,6 +185,32 @@ public class PinutMapFragment extends SupportMapFragment implements
                 loadMarkers();
             }
         }
+    }
+
+    // ------------- rotinas das markers customizadas
+    @Override
+    public View getInfoWindow(Marker marker) {
+
+        return null;
+    }
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        View view = getLayoutInflater(null).inflate(R.layout.pinut_info_window, null);
+        LatLng l = marker.getPosition();
+        TextView lat = (TextView) view.findViewById(R.id.info_lat);
+        TextView lng = (TextView) view.findViewById(R.id.info_lng);
+        lat.setText(Double.toString(l.latitude));
+        lng.setText(Double.toString(l.longitude));
+        return view;
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        Pinut pinut = (Pinut) marker.getTag();
+        Toast.makeText(getContext(), "Janela da pinut clickada!" +
+                "\n Lat: "+ pinut.getLocation().latitude
+                +"\nLng: "+ pinut.getLocation().longitude, Toast.LENGTH_SHORT).show();
     }
 
     // ---------------- Rotinas dos servições de localização
