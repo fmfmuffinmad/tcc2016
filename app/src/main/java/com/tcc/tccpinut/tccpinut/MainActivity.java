@@ -35,6 +35,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.tcc.tccpinut.tccpinut.classes.Pinut;
 import com.tcc.tccpinut.tccpinut.fragments.AmigosFragment;
 import com.tcc.tccpinut.tccpinut.fragments.ContaFragment;
 import com.tcc.tccpinut.tccpinut.fragments.PinutMapFragment;
@@ -45,13 +46,12 @@ public class MainActivity extends AppCompatActivity
         TopPinutsFragment.OnFragmentInteractionListener,
         AmigosFragment.OnFragmentInteractionListener,
         ContaFragment.OnFragmentInteractionListener
-
 {
 
     private FragmentManager fragManager;
     private FloatingActionButton fab;
     private PinutMapFragment pinutMapFragment;
-
+    private int CREAT_PINUT_REQUEST = 500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +65,10 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pinutMapFragment.testePinut();
+//                pinutMapFragment.testePinut();
 
-//                Intent intentCreatePinut = new Intent(MainActivity.this, CreatePinut.class);
-//                startActivity(intentCreatePinut);
+                Intent intentCreatePinut = new Intent(MainActivity.this, CreatePinut.class);
+                startActivityForResult(intentCreatePinut, CREAT_PINUT_REQUEST);
             }
         });
 
@@ -86,6 +86,21 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction fragTran = fragManager.beginTransaction();
         createMapFrag(fragTran);
     }
+
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == CREAT_PINUT_REQUEST){
+            if(resultCode == RESULT_OK){
+                Pinut pinut = (Pinut) data.getSerializableExtra("pin");
+                String res = "Titulo: " + pinut.getTitle() + "\n" +
+                        "Texto: " + pinut.getText() + "\n" +
+                        "Foto: " + pinut.getImagepath() + "\n";
+                Toast.makeText(this, res, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

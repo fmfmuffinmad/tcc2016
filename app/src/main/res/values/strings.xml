@@ -10,4 +10,12 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="createPinutTitulo">Título</string>
+    <string name="createPinutDescricao">Adicione um texto</string>
+    <string name="criarPinut">Criar Pinut</string>
+    <string name="cancelarPinut">Cancelar</string>
+    <string name="txtVPrivacidade">Privacidade:</string>
+    <string name="publica">Pública</string>
+    <string name="privada">Privada</string>
+    <string name="duracaoPin">Duração(Horas)</string>
 </resources>

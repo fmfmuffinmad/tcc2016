@@ -2,12 +2,13 @@ package com.tcc.tccpinut.tccpinut.classes;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by muffinmad on 14/09/2016.
  */
-public class Pinut {
+public class Pinut implements Serializable{
 
     // TODO: Criar os métodos (se tiver métodos...)
     private int pinid;
@@ -20,6 +21,7 @@ public class Pinut {
     private String audiopath;
     private String title;
     private String text;
+    private int type;
 
     public Pinut() {
 
@@ -115,4 +117,11 @@ public class Pinut {
     }
 
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 }
