@@ -1,25 +1,20 @@
 package com.tcc.tccpinut.tccpinut;
 
-import android.*;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatImageHelper;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
@@ -28,6 +23,12 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -41,12 +42,14 @@ import com.tcc.tccpinut.tccpinut.classes.Pinut;
 import com.tcc.tccpinut.tccpinut.helpers.AudioHelper;
 import com.tcc.tccpinut.tccpinut.helpers.ImageHelper;
 
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.sql.Time;
-import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class CreatePinut extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -63,8 +66,11 @@ public class CreatePinut extends AppCompatActivity implements
     private Switch switchPriva;
 
     private final int CODIGO_CAMERA = 1;
-    private String caminhoFoto, caminhoAudio;
+    private String caminhoFoto = null, caminhoAudio = null;
     private AudioHelper aHelper;
+
+    private RequestQueue queue = null;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -78,40 +84,28 @@ public class CreatePinut extends AppCompatActivity implements
         setContentView(R.layout.activity_create_pinut);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        double latitude = getIntent().getDoubleExtra("latitude", 0);
+        double longitude = getIntent().getDoubleExtra("longitude", 0);
+        this.latLng = new LatLng(latitude, longitude);
+
         btCriarPinut = (Button) findViewById(R.id.btCriarPinut);
         btCancelarPinut = (Button) findViewById(R.id.btCancelarPinut);
-        switchPriva = (Switch)findViewById(R.id.switchPrivacidade);
+        switchPriva = (Switch) findViewById(R.id.switchPrivacidade);
 
-
-        gravar = (Button)findViewById(R.id.gravar);
-        parar = (Button)findViewById(R.id.parar);
-        tocar = (Button)findViewById(R.id.tocar);
-
+        gravar = (Button) findViewById(R.id.gravar);
+        parar = (Button) findViewById(R.id.parar);
+        tocar = (Button) findViewById(R.id.tocar);
 
         gravar.setOnClickListener(this);
         parar.setOnClickListener(this);
         tocar.setOnClickListener(this);
 
-
         switchPriva.setOnClickListener(this);
         btCriarPinut.setOnClickListener(this);
         btCancelarPinut.setOnClickListener(this);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);  /*(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkLocationPermission();
-                buildGoogleApiClient();
-                if (latLng != null) {
-                    Toast.makeText(CreatePinut.this, "Pinut criada na posição "+latLng.latitude+", "+latLng.longitude, Toast.LENGTH_SHORT).show();
-                    finish();
-                }else{
-                    Toast.makeText(CreatePinut.this, "Ainda não foi possível definir a localização do dispositivo", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });*/
-
+        fab.setOnClickListener(this);
         checkLocationPermission();
         buildGoogleApiClient();
 
@@ -120,87 +114,133 @@ public class CreatePinut extends AppCompatActivity implements
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+
     @Override
     public void onClick(View v) {
         int item = v.getId();
+        switch(item) {
+            case R.id.btCriarPinut:
+                if (latLng != null) {
+                    queue = Volley.newRequestQueue(this);
 
-        if (item == R.id.btCriarPinut) {
+                    Pinut pinut = new Pinut();
 
-            if(latLng != null) {
-                Pinut pinut = new Pinut();
+                    edtTxtTitulo = (EditText) findViewById(R.id.edtTxtTitulo);
+                    edtTxtTexto = (EditText) findViewById(R.id.edtTxtTexto);
+                    edtTxtDuracaoPin = (EditText) findViewById(R.id.edtTxtDuracaoHoras);
+                    if (switchPriva.isChecked()) {
+                        pinut.setPrivacy(1);
+                    } else {
+                        pinut.setPrivacy(0);
+                    }
+                    pinut.setTitle(edtTxtTitulo.getText().toString());
+                    pinut.setText(edtTxtTexto.getText().toString());
 
-                edtTxtTitulo = (EditText) findViewById(R.id.edtTxtTitulo);
-                edtTxtTexto = (EditText) findViewById(R.id.edtTxtTexto);
-                edtTxtDuracaoPin = (EditText) findViewById(R.id.edtTxtDuracaoHoras);
+                    long time = System.currentTimeMillis();
+                    pinut.setCreatedOn(time);
+                    pinut.setExpireOn(time + TimeUnit.HOURS.toMillis(Long.parseLong(edtTxtDuracaoPin.getText().toString())));
 
-                if (switchPriva.isChecked()) {
-                    pinut.setPrivacy(1);
+                    pinut.setLatitude(latLng.latitude);
+                    pinut.setLongitude(latLng.longitude);
+                    pinut.setImagepath(caminhoFoto);
+                    pinut.setAudiopath(caminhoAudio);
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                    Date date = new Date(pinut.getCreatedOn());
+                    String dataFormCriada = sdf.format(date);
+
+                    Date date2 = new Date(pinut.getExpireOn());
+                    String dataFormExpira = sdf.format(date2);
+
+                    final String url = "http://webservices.pinut.com.br/PinutWebServices/testeinsertpinut.php";
+
+                    HashMap<String, String> hash = new HashMap<String, String>();
+                    hash.put("createdby", "2");
+                    hash.put("expireon", dataFormExpira);
+                    hash.put("privacy", String.valueOf(pinut.getPrivacy()));
+                    hash.put("createdon", dataFormCriada);
+                    hash.put("latitude", String.valueOf(pinut.getLatitude()));
+                    hash.put("longitude", String.valueOf(pinut.getLongitude()));
+
+                    JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(hash),
+                            new Response.Listener<JSONObject>()
+                            {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        response = response.getJSONObject("0");
+                                        String resp = response.getString("0");
+                                        Toast.makeText(CreatePinut.this, resp, Toast.LENGTH_SHORT).show();
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener()
+                            {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    error.printStackTrace();
+                                    //Log.d("Error.Response", error.toString());
+                                    System.out.println("\n\n" + error.toString() + "\n\n");
+                                    Toast.makeText(CreatePinut.this, error.toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                    queue.add(getRequest);
+
+                    Intent result = new Intent();
+                    result.putExtra("pin", pinut);
+                    setResult(RESULT_OK, result);
+                    finish();
                 } else {
-                    pinut.setPrivacy(0);
+                    Toast.makeText(this, "Erro ao carregar sua localização!", Toast.LENGTH_LONG).show();
                 }
-
-                pinut.setTitle(edtTxtTitulo.getText().toString());
-                pinut.setText(edtTxtTexto.getText().toString());
-
-                long time = System.currentTimeMillis();
-                pinut.setCreatedOn(time);
-                pinut.setExpireOn(time + TimeUnit.MILLISECONDS.convert(
-                        Integer.parseInt(edtTxtDuracaoPin.getText().toString()),
-                        TimeUnit.HOURS
-                ));
-
-                pinut.setLocation(latLng.latitude, latLng.longitude);
-                pinut.setImagepath(caminhoFoto);
-                pinut.setAudiopath(caminhoAudio);
-
-                Intent result = new Intent();
-                result.putExtra("pin", pinut);
-
-                setResult(RESULT_OK, result);
+                break;
+            case R.id.btCancelarPinut:
+                setResult(RESULT_CANCELED, null);
                 finish();
-            } else {
-                Toast.makeText(this, "Erro ao carregar sua localização!", Toast.LENGTH_LONG).show();
-            }
+                break;
+            case R.id.fab:
+                Intent intentTiraFoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                caminhoFoto = getExternalFilesDir(null) + "/" + System.currentTimeMillis() + ".jpg";
+                File arquivoFoto = new File(caminhoFoto);
+                intentTiraFoto.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(arquivoFoto));
+                startActivityForResult(intentTiraFoto, CODIGO_CAMERA);
+                break;
+
+            case R.id.switchPrivacidade:
+                if (switchPriva.isChecked()) {
+                    switchPriva.setText(R.string.privada);
+                } else {
+                    switchPriva.setText(R.string.publica);
+                }
+                break;
+
+            case R.id.gravar:
+                caminhoAudio = Environment.getExternalStorageDirectory().
+                        getAbsolutePath() + "/javacodegeeksRecording.3gpp";
+                aHelper = new AudioHelper(caminhoAudio);
+                aHelper.start();
+                break;
+
+            case R.id.parar:
+                if(aHelper != null) {
+                    aHelper.stop();
+                } else {
+                    Toast.makeText(this, "Não foi gravado um áudio ainda.", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            case R.id.tocar:
+                if(aHelper != null) {
+                    aHelper.play();
+                } else {
+                    Toast.makeText(this, "Não foi gravado um áudio ainda.", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
-
-        if (item == R.id.btCancelarPinut) {
-            setResult(RESULT_CANCELED, null);
-            finish();
-        }
-
-        if (item == R.id.fab) {
-            Intent intentTiraFoto = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            caminhoFoto = getExternalFilesDir(null) + "/" + System.currentTimeMillis() + ".jpg";
-            File arquivoFoto = new File(caminhoFoto);
-            intentTiraFoto.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(arquivoFoto));
-            startActivityForResult(intentTiraFoto, CODIGO_CAMERA);
-        }
-
-        if(item == R.id.switchPrivacidade){
-            if(switchPriva.isChecked()){
-                switchPriva.setText(R.string.privada);
-            } else {
-                switchPriva.setText(R.string.publica);
-            }
-        }
-
-        if(item == R.id.gravar){
-            caminhoAudio = Environment.getExternalStorageDirectory().
-                    getAbsolutePath() + "/javacodegeeksRecording.3gpp";
-
-
-            aHelper = new AudioHelper(caminhoAudio);
-            aHelper.start();
-        }
-
-        if(item == R.id.parar){
-            aHelper.stop();
-        }
-
-        if(item == R.id.tocar){
-            aHelper.play();
-        }
-
     }
 
 
@@ -208,13 +248,12 @@ public class CreatePinut extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case CODIGO_CAMERA:
-                if(resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
                     ImageHelper imageHelper = new ImageHelper();
-
-                    Bitmap bitmap = imageHelper.lessResolution(caminhoFoto, 150, 150);
-
+                    Bitmap bitmap = imageHelper.lessResolution(caminhoFoto, 300, 300);
                     ImageView campoFoto = (ImageView) findViewById(R.id.ciarPinutFoto);
                     campoFoto.setImageBitmap(bitmap);
+                    campoFoto.setTag(caminhoFoto);
                 }
                 break;
         }
@@ -236,6 +275,16 @@ public class CreatePinut extends AppCompatActivity implements
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
 

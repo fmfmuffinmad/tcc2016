@@ -32,11 +32,11 @@ public class PinutDAO extends DBControl{
         ContentValues dados = new ContentValues();
         dados.put("PINID", pinut.getPinid());
         dados.put("OWNERID", pinut.getOwnerid());
-        dados.put("EXPIREON", pinut.getExpireOn().getTime());
+        dados.put("EXPIREON", pinut.getExpireOn()/*.getTime()*/);
         dados.put("PRIVACY", pinut.getPrivacy());
-        dados.put("CREATEDON", pinut.getCreatedOn().getTime());
-        dados.put("LATITUDE", pinut.getLocation().latitude);
-        dados.put("LONGITUDE", pinut.getLocation().longitude);
+        dados.put("CREATEDON", pinut.getCreatedOn()/*.getTime()*/);
+        dados.put("LATITUDE", pinut.getLatitude());
+        dados.put("LONGITUDE", pinut.getLongitude());
         dados.put("IMAGEPATH", pinut.getImagepath());
         dados.put("AUDIOPATH", pinut.getAudiopath());
         dados.put("TITLE", pinut.getTitle());
@@ -46,10 +46,10 @@ public class PinutDAO extends DBControl{
     }
 
     public void deletar(Pinut pinut) {
+
         SQLiteDatabase db = getWritableDatabase();
         String[] params = {Long.toString(pinut.getPinid())};
         db.delete("PINUTS", "PINID = ?", params);
-
     }
 
 
@@ -74,7 +74,9 @@ public class PinutDAO extends DBControl{
             pinut.setExpireOn(c.getLong(c.getColumnIndex("EXPIREON")));
             pinut.setPrivacy(c.getInt(c.getColumnIndex("PRIVACY")));
             pinut.setCreatedOn(c.getLong(c.getColumnIndex("CREATEDON")));
-            pinut.setLocation(c.getDouble(c.getColumnIndex("LATITUDE")),c.getDouble(c.getColumnIndex("LONGITUDE")));
+            //pinut.setLocation(c.getDouble(c.getColumnIndex("LATITUDE")),c.getDouble(c.getColumnIndex("LONGITUDE")));
+            pinut.setLatitude(c.getDouble(c.getColumnIndex("LATITUDE")));
+            pinut.setLongitude(c.getDouble(c.getColumnIndex("LONGITUDE")));
             pinut.setImagepath(c.getString(c.getColumnIndex("IMAGEPATH")));
             pinut.setAudiopath(c.getString(c.getColumnIndex("AUDIOPATH")));
             pinut.setTitle(c.getString(c.getColumnIndex("TITLE")));

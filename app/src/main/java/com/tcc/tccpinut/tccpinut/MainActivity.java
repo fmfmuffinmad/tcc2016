@@ -1,19 +1,11 @@
 package com.tcc.tccpinut.tccpinut;
 
-import android.*;
-import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
@@ -27,26 +19,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
+import com.tcc.tccpinut.tccpinut.DAOs.PinutDAO;
 import com.tcc.tccpinut.tccpinut.classes.Pinut;
 import com.tcc.tccpinut.tccpinut.fragments.AmigosFragment;
 import com.tcc.tccpinut.tccpinut.fragments.ContaFragment;
 import com.tcc.tccpinut.tccpinut.fragments.PinutMapFragment;
 import com.tcc.tccpinut.tccpinut.fragments.TopPinutsFragment;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        TopPinutsFragment.OnFragmentInteractionListener,
-        AmigosFragment.OnFragmentInteractionListener,
-        ContaFragment.OnFragmentInteractionListener
-{
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
+        TopPinutsFragment.OnFragmentInteractionListener, AmigosFragment.OnFragmentInteractionListener,
+        ContaFragment.OnFragmentInteractionListener {
 
     private FragmentManager fragManager;
     private FloatingActionButton fab;
@@ -65,9 +47,9 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                pinutMapFragment.testePinut();
-
                 Intent intentCreatePinut = new Intent(MainActivity.this, CreatePinut.class);
+                intentCreatePinut.putExtra("latitude", pinutMapFragment.getInitLatLng().latitude);
+                intentCreatePinut.putExtra("longitude", pinutMapFragment.getInitLatLng().longitude);
                 startActivityForResult(intentCreatePinut, CREAT_PINUT_REQUEST);
             }
         });
@@ -87,20 +69,29 @@ public class MainActivity extends AppCompatActivity
         createMapFrag(fragTran);
     }
 
-
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode == CREAT_PINUT_REQUEST){
             if(resultCode == RESULT_OK){
-                Pinut pinut = (Pinut) data.getSerializableExtra("pin");
-                String res = "Titulo: " + pinut.getTitle() + "\n" +
-                        "Texto: " + pinut.getText() + "\n" +
-                        "Foto: " + pinut.getImagepath() + "\n";
-                Toast.makeText(this, res, Toast.LENGTH_LONG).show();
+                if(data != null) {
+                    Pinut pinut = data.getParcelableExtra("pin");
+                    /*
+                    String res = "Titulo: " + pinut.getTitle() + "\n" +
+                            "Texto: " + pinut.getText() + "\n" +
+                            "Lat: " + pinut.getLatitude() + "\n" +
+                            "Long: " + pinut.getLongitude() + "\n" +
+                            "Criado: " + pinut.getCreatedOn() + "\n" +
+                            "Expira: " + pinut.getExpireOn() + "\n";
+                    System.out.println(res);
+                    Toast.makeText(this, res, Toast.LENGTH_LONG).show();
+                    */
+                    PinutDAO pinD = new PinutDAO(this);
+                    pinD.insert(pinut);
+                    pinD.close();
+                    pinutMapFragment.loadMarkers();
+                }
             }
         }
     }
-
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -139,15 +130,12 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
-
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -192,7 +180,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-
     }
 
 }

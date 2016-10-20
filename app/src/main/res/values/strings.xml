@@ -18,4 +18,6 @@
     <string name="publica">Pública</string>
     <string name="privada">Privada</string>
     <string name="duracaoPin">Duração(Horas)</string>
+    <string name="title_activity_mostrar_detalhes_pinut">MostrarDetalhesPinut</string>
+    <string name="btFechar">Fechar</string>
 </resources>

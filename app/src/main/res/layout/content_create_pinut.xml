@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -92,6 +91,35 @@
             android:layout_height="wrap_content"
             android:id="@+id/switchPrivacidade"
             android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:text="Gravar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/gravar"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="parar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/parar"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="tocar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tocar"
+            android:layout_weight="1" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -117,24 +145,6 @@
             tools:ignore="ButtonStyle"
             android:layout_gravity="bottom" />
     </LinearLayout>
-
-    <Button
-        android:text="Gravar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/gravar" />
-
-    <Button
-        android:text="parar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/parar" />
-
-    <Button
-        android:text="tocar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/tocar" />
 
 </LinearLayout>
 

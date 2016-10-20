@@ -1,12 +1,17 @@
 package com.tcc.tccpinut.tccpinut.fragments;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Camera;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -30,8 +35,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.vision.text.Text;
+import com.tcc.tccpinut.tccpinut.CreatePinut;
 import com.tcc.tccpinut.tccpinut.DAOs.DBControl;
 import com.tcc.tccpinut.tccpinut.DAOs.PinutDAO;
+import com.tcc.tccpinut.tccpinut.MainActivity;
+import com.tcc.tccpinut.tccpinut.MostrarDetalhesPinut;
 import com.tcc.tccpinut.tccpinut.R;
 import com.tcc.tccpinut.tccpinut.classes.Pinut;
 
@@ -40,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
+
+import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by muffinmad on 13/09/2016.
@@ -58,14 +68,18 @@ public class PinutMapFragment extends SupportMapFragment implements
     private LocationRequest mLocationRequest;
     private Location mLastLocation;
     private Marker mCurrLocationMarker;
-    private boolean firstExecution;
+    private boolean firstExecution = true;
     private CameraPosition cameraPosition;
     //private List<Marker> markerList;
     private WeakHashMap<Marker, Pinut> markerHashMap;
 
+
     // variáveis para auxiliar no carregamentos das pints
     private LatLng currLatLng;
     private final double CHUNCK_VALUE = 0.05;
+
+    public PinutMapFragment() {
+    }
 
     public LatLng getInitLatLng() {
         return initLatLng;
@@ -78,13 +92,14 @@ public class PinutMapFragment extends SupportMapFragment implements
     @Override
     public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
+
         firstExecution = true;
         //markerList = new ArrayList<Marker>();
         markerHashMap = new WeakHashMap<Marker, Pinut>();
         getMapAsync(this);
     }
 
-    public void moveCamera(LatLng latLng){
+    public void moveCamera(LatLng latLng) {
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(initLatLng, 12);
         gMap.moveCamera(cameraUpdate);
     }
@@ -95,6 +110,7 @@ public class PinutMapFragment extends SupportMapFragment implements
         gMap.setOnCameraMoveListener(this);
         gMap.setInfoWindowAdapter(this);
         gMap.setOnInfoWindowClickListener(this);
+        //gMap.setOnMyLocationChangeListener(myLocationChangeListener);
 
         checkLocationPermission();
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -103,30 +119,34 @@ public class PinutMapFragment extends SupportMapFragment implements
                     == PackageManager.PERMISSION_GRANTED) {
                 buildGoogleApiClient();
                 gMap.setMyLocationEnabled(true);
-
             }
-        }
-        else {
+        } else {
             buildGoogleApiClient();
             gMap.setMyLocationEnabled(true);
-
         }
         loadMarkers();
     }
-
+/*
+    private GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
+        @Override
+        public void onMyLocationChange(Location location) {
+            System.out.println("\n Mudou carai: " + location.getLongitude() + "\n" +
+                    location.getLatitude());
+        }
+    };
+*/
 
     // Função que vai pegar os markers pelo webservice e colocar no mapa
-    private boolean loadMarkers(){
+    public boolean loadMarkers() {
         PinutDAO dao = new PinutDAO(getContext());
         List<Pinut> lista = dao.buscaPinuts(); //// TODO: 21/09/2016 Trocar pela função do webservice
         dao.close();
         gMap.clear();
         if (lista != null) {
             if (!lista.isEmpty()) {
-                for (Pinut pinut: lista
-                     ) {
+                for (Pinut pinut : lista) {
                     MarkerOptions mk = new MarkerOptions();
-                    mk.position(pinut.getLocation());
+                    mk.position(new LatLng(pinut.getLatitude(), pinut.getLongitude()));
                     mk.title(pinut.getTitle());
                     Marker a = gMap.addMarker(mk);
                     a.setTag(pinut);
@@ -139,9 +159,11 @@ public class PinutMapFragment extends SupportMapFragment implements
         return true;
     }
 
-    public void testePinut(){
+    public void testePinut() {
         Pinut pinut = new Pinut();
-        pinut.setLatLng(gMap.getCameraPosition().target);
+        //pinut.setLatLng(gMap.getCameraPosition().target);
+        pinut.setLatitude(gMap.getCameraPosition().target.latitude);
+        pinut.setLongitude(gMap.getCameraPosition().target.longitude);
         pinut.setTitle("VISH PINUT NOVA!");
         pinut.setCreatedOn(System.currentTimeMillis());
         pinut.setExpireOn(TimeUnit.MILLISECONDS.convert(3, TimeUnit.DAYS));
@@ -157,7 +179,7 @@ public class PinutMapFragment extends SupportMapFragment implements
         Geocoder geocoder = new Geocoder(getContext());
         try {
             List<Address> fromLocationName = geocoder.getFromLocationName(adress, 1);
-            if (!fromLocationName.isEmpty()){
+            if (!fromLocationName.isEmpty()) {
                 LatLng pos = new LatLng(fromLocationName.get(0).getLatitude(), fromLocationName.get(0).getLongitude());
                 return pos;
             }
@@ -169,18 +191,16 @@ public class PinutMapFragment extends SupportMapFragment implements
 
     @Override
     public void onCameraMove() {
-
         cameraPosition = gMap.getCameraPosition();
         TextView t1 = (TextView) getActivity().findViewById(R.id.lat);
         TextView t2 = (TextView) getActivity().findViewById(R.id.lng);
         t1.setText(Double.toString(cameraPosition.target.latitude));
         t2.setText(Double.toString(cameraPosition.target.longitude));
-
         if (currLatLng == null) {
             currLatLng = cameraPosition.target;
-        }else{
-            if ( (Math.abs(cameraPosition.target.latitude)+Math.abs(cameraPosition.target.longitude))
-                    -  (Math.abs(currLatLng.latitude)+Math.abs(currLatLng.longitude)) > CHUNCK_VALUE){
+        } else {
+            if ((Math.abs(cameraPosition.target.latitude) + Math.abs(cameraPosition.target.longitude))
+                    - (Math.abs(currLatLng.latitude) + Math.abs(currLatLng.longitude)) > CHUNCK_VALUE) {
                 currLatLng = cameraPosition.target;
                 loadMarkers();
             }
@@ -208,9 +228,15 @@ public class PinutMapFragment extends SupportMapFragment implements
     @Override
     public void onInfoWindowClick(Marker marker) {
         Pinut pinut = (Pinut) marker.getTag();
+        /*
         Toast.makeText(getContext(), "Janela da pinut clickada!" +
-                "\n Lat: "+ pinut.getLocation().latitude
-                +"\nLng: "+ pinut.getLocation().longitude, Toast.LENGTH_SHORT).show();
+                "\n Lat: " + pinut.getLatitude()
+                + "\nLng: " + pinut.getLongitude(), Toast.LENGTH_SHORT).show();
+        */
+        //TODO: ao clicar no marker exibir uma tela com as informações
+        Intent intentPinutDetalhes = new Intent(getActivity(), MostrarDetalhesPinut.class);
+        intentPinutDetalhes.putExtra("pinut", pinut);
+        startActivity(intentPinutDetalhes);
     }
 
     // ---------------- Rotinas dos servições de localização
@@ -226,45 +252,79 @@ public class PinutMapFragment extends SupportMapFragment implements
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
+        mLocationRequest.setInterval(5000);
         mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        //PRIORITY_BALANCED_POWER_ACCURACY
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
 
+    @Override
+    public void onStart() {
+        if(mGoogleApiClient != null) {
+            if (!mGoogleApiClient.isConnected()) {
+                mGoogleApiClient.connect();
+            }
+        }
+        super.onStart();
+    }
 
+    @Override
+    public void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
+        Toast.makeText(getActivity(), "AEEEEEEEEHAHAHAHA", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        Toast.makeText(getActivity(), "Falha ao conectar!", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
+        setInitLatLng(new LatLng(location.getLatitude(), location.getLongitude()));
         if (mCurrLocationMarker != null) {
             mCurrLocationMarker.remove();
         }
 
-        //Place current location marker
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        if(firstExecution){
+            gMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(getInitLatLng().latitude, getInitLatLng().longitude)));
+            gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            firstExecution = false;
+        }
 
+        //Place current location marker
+        //LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
         //move map camera
+        /*
         gMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         gMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+*/
 
 
         //stop location updates
+        /*
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }
-
+        */
     }
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
@@ -276,7 +336,6 @@ public class PinutMapFragment extends SupportMapFragment implements
             // Asking user if explanation is needed
             if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
-
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
@@ -285,8 +344,6 @@ public class PinutMapFragment extends SupportMapFragment implements
                 ActivityCompat.requestPermissions(getActivity(),
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION);
-
-
             } else {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(getActivity(),
